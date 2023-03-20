@@ -18,6 +18,7 @@ public struct PianoRoll: View {
     var noteColor: Color
     var noteLineOpacity: Double
     var layout: Layout
+    @State var isContinuous: Bool
 
     /// Initialize PianoRoll with a binding to a model and a color
     /// - Parameters:
@@ -34,7 +35,8 @@ public struct PianoRoll: View {
         noteLineOpacity: Double = 1,
         gridColor: Color = Color(red: 15.0 / 255.0, green: 17.0 / 255.0, blue: 16.0 / 255.0),
         gridSize: CGSize = CGSize(width: 80, height: 40),
-        layout: Layout = .horizontal
+        layout: Layout = .horizontal,
+        isContinuous: Bool = false
     ) {
         _model = model
         self.noteColor = noteColor
@@ -43,6 +45,7 @@ public struct PianoRoll: View {
         self.gridColor = gridColor
         self.editable = editable
         self.layout = layout
+        self.isContinuous = isContinuous
     }
 
     private var width: CGFloat {
@@ -90,7 +93,7 @@ public struct PianoRoll: View {
                         color: noteColor,
                         sequenceLength: model.length,
                         sequenceHeight: model.height,
-                        isContinuous: true,
+                        isContinuous: isContinuous,
                         editable: editable,
                         lineOpacity: noteLineOpacity
                     ).onTapGesture {
@@ -105,7 +108,7 @@ public struct PianoRoll: View {
                         color: noteColor,
                         sequenceLength: model.length,
                         sequenceHeight: model.height,
-                        isContinuous: true,
+                        isContinuous: isContinuous,
                         editable: editable,
                         lineOpacity: noteLineOpacity
                     ).onTapGesture {
