@@ -7,7 +7,7 @@ let package = Package(
     platforms: [.macOS(.v12), .iOS(.v15)],
     products: [.library(name: "PianoRoll", targets: ["PianoRoll"])],
     dependencies: [
-        .package(url: "https://github.com/AudioKit/Tonic.git", from: "1.0.10"),
+        .package(url: "https://github.com/mgibson707/Tonic.git", branch: "main"),
     ],
     targets: [
         .target(name: "PianoRoll", dependencies: ["Tonic"]),
