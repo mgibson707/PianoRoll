@@ -2,12 +2,30 @@
 
 import SwiftUI
 import Tonic
+import AudioKit
+import Combine
 
 /// Value oriented data model for `PianoRoll`
 ///
 /// The data model is abstracted away from MIDI so that it's up to you
 /// to determine what pitch means (e.g. how it is scale quantized).
 public struct PianoRollModel: Equatable {
+
+    
+    
+    public static var simpleCMajScale: [MIDINoteData] = [
+        MIDINoteData(noteNumber: 60, position: .init(beats: 0), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 62, position: .init(beats: 1), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 64, position: .init(beats: 2), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 65, position: .init(beats: 3), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 67, position: .init(beats: 4), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 69, position: .init(beats: 5), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 71, position: .init(beats: 6), duration: .init(beats: 3)),
+        MIDINoteData(noteNumber: 72, position: .init(beats: 7), duration: .init(beats: 3))
+    ]
+
+    public var timestepColumnHighlight: Int = -1
+
     /// Initialize the PianoRollModel an array of PianoRollNotes, and dimensions
     /// - Parameters:
     ///   - notes: The sequence being edited
@@ -42,7 +60,8 @@ public struct PianoRollModel: Equatable {
                 keyedNote.key = key
                 return keyedNote
             }
-            print("Notes: \(_notes)")
+            //print("Notes: \(_notes)")
+            self.currentNotes.send(_notes)
         }
     }
     private var _notes: [PianoRollNote]
@@ -53,5 +72,42 @@ public struct PianoRollModel: Equatable {
 
     /// The number of pitches represented
     public var height: Int
+    
+    lazy var currentNotes: PassthroughSubject<[PianoRollNote], Never> = {
+        .init()
+    }()
+    
+    public lazy var midiNotesPublisher: AnyPublisher <[MIDINoteData], Never> = currentNotes
+        .removeDuplicates()
+        .map { pianoRollNotes in
+            pianoRollNotes.map({MIDINoteData(noteNumber: MIDINoteNumber($0.note.noteNumber), position: .init(beats: $0.start), duration: .init(beats: $0.length) )})
+        }
+        .eraseToAnyPublisher()
+    
+    
+    
+    public mutating func updateModelWithMIDINotes(_ midiNotes: [MIDINoteData], keepExisting: Bool = true) {
+        let pianoRollNotes = midiNotes.map { midiNote -> PianoRollNote in
+            let start = midiNote.position.beats
+            let length = midiNote.duration.beats
+            let pitch = Int(midiNote.noteNumber)
+            return PianoRollNote(start: start, length: length, pitch: pitch, color: nil, key: key)
+        }
+        
+        //TODO: improve the effeciency of the logic here
+        if !keepExisting {
+            /// Note: Although the data is already formatted suitably for assignment directly to `_notes`,
+            /// __doing so would skip the publisher update__, which is associated with the setter method on the `notes` property
+            self.notes = pianoRollNotes
+        }
+        self.notes.append(contentsOf: pianoRollNotes)
+
+
+    }
 }
 
+public extension MIDINoteData {
+    init(noteNumber: MIDINoteNumber, position: Duration, duration: Duration, velocity: MIDIVelocity = 90, channel: MIDIChannel = 0) {
+        self.init(noteNumber: noteNumber, velocity: velocity, channel: channel, duration: duration, position: position)
+    }
+}

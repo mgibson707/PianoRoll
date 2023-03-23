@@ -11,6 +11,8 @@ struct PianoRollGrid: Shape {
     var length: Int
     var height: Int
     var layout: PianoRoll.Layout
+    
+    @Binding var columnHighlight: Int
 
     func path(in rect: CGRect) -> Path {
         let size = rect.size
@@ -18,9 +20,17 @@ struct PianoRollGrid: Shape {
 
         func drawHorizontal(count: Int, width: CGFloat) {
             for column in 0 ... count {
-                let anchor = CGFloat(column) * width
+                let anchor: CGFloat = CGFloat(column) * width
                 path.move(to: CGPoint(x: anchor, y: 0))
                 path.addLine(to: CGPoint(x: anchor, y: size.height))
+                
+                if column == columnHighlight {
+                    print("PianoRollGrid sees instruction to highlight at column \(column)")
+                    let playheadAnchor = anchor + (width * 0.5)
+                    path.move(to: CGPoint(x: playheadAnchor, y: 0))
+                    path.addLine(to: CGPoint(x: playheadAnchor, y: size.height))
+
+                }
             }
         }
 

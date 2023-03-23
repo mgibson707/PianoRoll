@@ -1,5 +1,5 @@
 // Copyright AudioKit. All Rights Reserved. Revision History at http://github.com/AudioKit/PianoRoll/
-
+// PianoRoll.swift
 import SwiftUI
 
 /// Touch-oriented piano roll.
@@ -79,7 +79,7 @@ public struct PianoRoll: View {
                 }
                 model.notes.append(note)
             }
-            PianoRollGrid(gridSize: gridSize, length: model.length, height: model.height, layout: layout)
+            PianoRollGrid(gridSize: gridSize, length: model.length, height: model.height, layout: layout, columnHighlight: $model.timestepColumnHighlight)
                 .stroke(lineWidth: 0.5)
                 .foregroundColor(gridColor)
                 .contentShape(Rectangle())

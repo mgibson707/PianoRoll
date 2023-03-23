@@ -95,49 +95,58 @@ struct PianoRollNoteView: View {
                 }
             }
 
-        let lengthDragGesture = DragGesture(minimumDistance: minimumDistance)
+        let lengthDragGesture = DragGesture(minimumDistance: minimumDistance)//.exclusively(before: noteDragGesture).first
             .updating($lengthOffset) { value, state, _ in
                 state = value.translation.width
             }
             .onEnded { value in
                 note = snap(note: note, offset: CGSize.zero, lengthOffset: value.translation.width)
             }
-
-        // Main note body.
-        ZStack(alignment: .trailing) {
-            ZStack(alignment: .leading) {
+        
+            // Main note body.
+            ZStack(alignment: .trailing) {
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .foregroundColor(noteColor.opacity((hovering || offset != .zero || lengthOffset != 0) ? 1.0 : 0.8))
+                    Text(note.text ?? "")
+                        .opacity(note.text == nil ? 0 : 1)
+                        .font(.system(size: min(gridSize.height * 0.85, (gridSize.width * CGFloat(note.length) + lengthOffset) * 0.3), weight: .semibold))
+                        .padding(.leading, 5)
+                        //.padding(.trailing, 2)
+                    //.frame(maxHeight: gridSize.height)
+                }
                 Rectangle()
-                    .foregroundColor(noteColor.opacity((hovering || offset != .zero || lengthOffset != 0) ? 1.0 : 0.8))
-                Text(note.text ?? "")
-                    .opacity(note.text == nil ? 0 : 1)
-                    .padding(.leading, 5)
+                    .foregroundColor(.black)
+                    .padding(4)
+                    .frame(width: 10)
+                    .opacity(editable ? lineOpacity : 0)
             }
-            Rectangle()
-                .foregroundColor(.black)
-                .padding(4)
-                .frame(width: 10)
-                .opacity(editable ? lineOpacity : 0)
-        }
+            .background(Color.white)
             .onHover { over in hovering = over }
             .padding(1) // so we can see consecutive notes
             .frame(width: max(gridSize.width, gridSize.width * CGFloat(note.length) + lengthOffset),
                    height: gridSize.height)
+            .fixedSize(horizontal: false, vertical: true)
             .offset(noteOffset(note: startNote ?? note, dragOffset: offset))
             .gesture(editable ? noteDragGesture : nil)
             .preference(key: NoteOffsetsKey.self,
                         value: [NoteOffsetInfo(offset: noteOffset(note: startNote ?? note, dragOffset: offset),
                                                noteId: note.id)])
+            
+            // Length tab at the end of the note.
+            HStack {
+                Spacer()
+                Rectangle()
+                    .foregroundColor(.white.opacity(0.001))
+                    .frame(width: gridSize.width * 0.5, height: gridSize.height)
+                    .gesture(editable ? lengthDragGesture : nil)
+            }
+            .frame(width: gridSize.width * CGFloat(note.length),
+                   height: gridSize.height)
+            .offset(noteOffset(note: note, dragOffset: offset))
+            
+            
+        
 
-        // Length tab at the end of the note.
-        HStack {
-            Spacer()
-            Rectangle()
-                .foregroundColor(.white.opacity(0.001))
-                .frame(width: gridSize.width * 0.5, height: gridSize.height)
-                .gesture(editable ? lengthDragGesture : nil)
-        }
-        .frame(width: gridSize.width * CGFloat(note.length),
-               height: gridSize.height)
-        .offset(noteOffset(note: note, dragOffset: offset))
     }
 }

@@ -1,5 +1,5 @@
 // Copyright AudioKit. All Rights Reserved. Revision History at http://github.com/AudioKit/PianoRoll/
-
+// PianoRollNote.swift
 import SwiftUI
 import Tonic
 
@@ -18,10 +18,11 @@ public struct PianoRollNote: Equatable, Identifiable {
         self.pitch = pitch
         self.color = color
         self.key = key
-        self.text = Pitch(intValue: max(0, pitch - 1)).note(in: key).description
+        self.note = Pitch(intValue: max(0, pitch)).note(in: key)
+        self.text = note.description
+        self.color = Color(cgColor: Self.colorMap[Int(note.pitch.pitchClass)])
 
     }
-
     /// Unique Identifier
     public var id = UUID()
 
@@ -34,16 +35,33 @@ public struct PianoRollNote: Equatable, Identifiable {
     /// The current key that the composition is in
     public var key: Key {
         mutating didSet {
-            text = Pitch(intValue: max(0, pitch - 1)).note(in: key).description
+            note = Pitch(intValue: max(0, pitch)).note(in: key)
+            text = note.description
+            color = Color(cgColor: Self.colorMap[Int(note.pitch.pitchClass)])
+
         }
     }
 
     /// Abstract pitch, not MIDI notes.
     public var pitch: Int {
         mutating didSet {
-            text = Pitch(intValue: max(0, pitch - 1)).note(in: key).description
+            note = Pitch(intValue: max(0, pitch)).note(in: key)
+            text = note.description
+            color = Color(cgColor: Self.colorMap[Int(note.pitch.pitchClass)])
+
+//            let oct = (note.pitch.midiNoteNumber / 127).clamped(to: 0...1)
+//            let col = PitchColor.jameson[Int(note.pitch.pitchClass)].components!
+//            let cgCol = CGColor(red: col[0], green: col[1], blue: col[2], alpha: max(0.1, CGFloat(oct)))
+//            color = Color(cgColor: cgCol)
+
         }
     }
+    
+    /// The abstract pitch that has been quantized to a concrete Note in the current musical Key.
+    public private(set) var note: Note
+    
+    /// The array of 12 colors to use for mapping pitches (0 - 127) into pitch classes
+    public static var colorMap: [CGColor] = PitchColor.jameson
 
     /// Optional text shown on the note view
     public var text: String?
