@@ -44,16 +44,16 @@ public struct PianoRollModel: Equatable {
     
     public var key: Key {
         didSet {
-            // triggers notes to reassign themselves
+            // Triggers notes to reassign themselves
+            // the latest key via the notes setter.
             notes = _notes
         }
     }
     
     /// The sequence being edited
     public var notes: [PianoRollNote] {
-        get {
-            return _notes
-        }
+        get { return _notes }
+        
         set(newNotes) {
             _notes = newNotes.map { note in
                 var keyedNote = note
@@ -61,10 +61,16 @@ public struct PianoRollModel: Equatable {
                 return keyedNote
             }
             //print("Notes: \(_notes)")
+            //self.currentNotes.send(_notes)
+        }
+    }
+    
+    /// Proxy storage for `notes` property of `PianoRollModel`.  Avoid using directly, instead accessing the `notes` property.
+    private var _notes: [PianoRollNote] {
+        didSet {
             self.currentNotes.send(_notes)
         }
     }
-    private var _notes: [PianoRollNote]
 
 
     /// Duration in steps
